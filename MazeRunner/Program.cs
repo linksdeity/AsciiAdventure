@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Media;
+using System.Threading;
 
 namespace MazeRunner
 {
@@ -11,6 +14,11 @@ namespace MazeRunner
         static void Main(string[] args)
         {
 
+            Random playerRoll = new Random();
+            Player playerOne = new Player();
+
+            //SoundPlayer player = new SoundPlayer(@"C:\Users\tbroughton\source\repos\MazeRunner\Assets\Audio\themetest.wav");
+            //player.PlayLooping();
 
 
             //this array holds the actual maze, the walls and paths
@@ -37,30 +45,36 @@ namespace MazeRunner
             { 0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0 },//8
             { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } };//9
 
+            //0 = wall
+            //1 = open space
+            //2 = door - doors count as walls but display differently, moving onto one checks for key, if key found the door goes away as does the key
+            //3 = treasure chest - counts as open space, renders chest on middle image from any angle, and player can pree O to open, receive itme, and return space to normal
+
+
 
             //this array will hold the map
             char[,] map = new char[,] {
             // 0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9
-            { ' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ' },//0
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//1
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//2
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//3
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//4
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//5
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//6
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//7
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//8
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//9
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//0
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//1
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//2
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//3
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//4
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//5
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//6
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//7
-            { '|',' ',' ',' ',' ',' ',' ',' ',' ','^',' ',' ',' ',' ',' ',' ',' ',' ',' ','|' },//8
-            { ' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ' } };//9
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//0
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//1
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//2
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//3
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//4
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//5
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//6
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//7
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//8
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//9
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//0
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//1
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//2
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//3
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//4
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//5
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//6
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//7
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ','^',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' },//8
+            { ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' } };//9
 
 
 
@@ -73,8 +87,6 @@ namespace MazeRunner
 
             while(true)
             {
-                //render map
-
 
                 Console.WriteLine("\n" + RenderMaze(maze, playerFacing, playerLocation, map));
                 
@@ -82,12 +94,24 @@ namespace MazeRunner
                 int[] oldLocation = new int[2];
                 playerLocation.CopyTo(oldLocation, 0);
 
+
+                //get player move
                 char action = Console.ReadKey(true).KeyChar;
+
 
                 switch(action)
                 {
                     case 'w':
                         playerLocation = MoveForward(playerFacing, playerLocation, maze);
+
+                        //combat check every move
+                        if (playerRoll.Next(1, 16) == 15)
+                        {
+                            //determine enemy and call combat method
+                            //CombatMethod();
+                            Combat(playerOne, playerRoll, playerLocation);
+                        }
+
                         break;
                     case 'd':
                         playerFacing = TurnPlayer(action, playerFacing);
@@ -101,7 +125,9 @@ namespace MazeRunner
                 }
 
                 //mark open space on map after moving
-                map[oldLocation[0],oldLocation[1]] = '#';
+                map[oldLocation[0],oldLocation[1]] = '.';
+
+
 
                 char facingArrow = '^';
 
@@ -126,17 +152,14 @@ namespace MazeRunner
                 Console.Clear();
             }
     
-
         }
 
-        //-------------------------------------------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------------------------------------
         static string RenderMaze(int[,] maze, char playerFacing, int[] playerLocation, char[,] map)
         {
-            //draws the maze on screen
-
-            int[] leftFrontRight = GrabPlayerSurroundings(maze, playerFacing, playerLocation);
-
             
+            int[] leftFrontRight = GrabPlayerSurroundings(maze, playerFacing, playerLocation, map);
+
             //array indexes...
             //0 = left
             //1 = front
@@ -146,354 +169,133 @@ namespace MazeRunner
 
             string renderMaze = "";
 
-            string[] leftImage = new string[15];
-            string[] frontImage = new string[15];
-            string[] rightImage = new string[15];
+            string left = "";
+            string middle = "";
+            string right = "";
 
 
+
+            //--------------------------------------------------------------------------------------
+            //left images when there is a middle path
 
             if (leftFrontRight[0] == 0 && leftFrontRight[3] == 0)
             {
-                //wall to left and front nd left
-                leftImage[0] = @"\    ";
-                leftImage[1] = @"|\   ";
-                leftImage[2] = @"||\  ";
-                leftImage[3] = @"|||\ ";
-                leftImage[4] = @"||||\";
-                leftImage[5] = @"|||||";
-                leftImage[6] = @"|||||";
-                leftImage[7] = @"|||||";
-                leftImage[8] = @"|||||";
-                leftImage[9] = @"|||||";
-               leftImage[10] = @"||||/";
-               leftImage[11] = @"|||/*";
-               leftImage[12] = @"||/**";
-               leftImage[13] = @"|/***";
-               leftImage[14] = @"/****";
+                left = "WallLeftWallFront";
             }
             else if(leftFrontRight[0] == 0 && leftFrontRight[3] == 1)
             {
-                //wall left but open space front and left
-                leftImage[0] = @"\    ";
-                leftImage[1] = @"|\   ";
-                leftImage[2] = @"||\  ";
-                leftImage[3] = @"|||  ";
-                leftImage[4] = @"|||__";
-                leftImage[5] = @"|||  ";
-                leftImage[6] = @"|||  ";
-                leftImage[7] = @"|||  ";
-                leftImage[8] = @"|||  ";
-                leftImage[9] = @"|||  ";
-               leftImage[10] = @"|||**";
-               leftImage[11] = @"|||**";
-               leftImage[12] = @"||/**";
-               leftImage[13] = @"|/***";
-               leftImage[14] = @"/****";
+                left = "WallLeftOpenFront";
             }
             else if(leftFrontRight[0] == 1 && leftFrontRight[3] == 1)
             {
-                //open space left and front and left
-                leftImage[0] = @"     ";
-                leftImage[1] = @"     ";
-                leftImage[2] = @"     ";
-                leftImage[3] = @"     ";
-                leftImage[4] = @"_____";
-                leftImage[5] = @"     ";
-                leftImage[6] = @"     ";
-                leftImage[7] = @"     ";
-                leftImage[8] = @"     ";
-                leftImage[9] = @"     ";
-               leftImage[10] = @"*****";
-               leftImage[11] = @"*****";
-               leftImage[12] = @"*****";
-               leftImage[13] = @"*****";
-               leftImage[14] = @"*****";
+                left = "OpenLeftOpenFront";
             }
             else if (leftFrontRight[0] == 1 && leftFrontRight[3] == 0)
             {
-                //open space left but wall front and left
-                leftImage[0] = @"     ";
-                leftImage[1] = @"     ";
-                leftImage[2] = @"___  ";
-                leftImage[3] = @"|||\ ";
-                leftImage[4] = @"||||\";
-                leftImage[5] = @"|||||";
-                leftImage[6] = @"|||||";
-                leftImage[7] = @"|||||";
-                leftImage[8] = @"|||||";
-                leftImage[9] = @"|||||";
-               leftImage[10] = @"||||/";
-               leftImage[11] = @"|||/*";
-               leftImage[12] = @"*****";
-               leftImage[13] = @"*****";
-               leftImage[14] = @"*****";
+                left = "OpenLeftWallFront";
             }
 
 
-            //---------------------------------------
+            //-------------------------------------------------------------------------------
+            //right images while there is a middle path
 
             if (leftFrontRight[2] == 0 && leftFrontRight[4] == 0)
             {
-                //wall right and front and right
-                rightImage[0] = @"    /";
-                rightImage[1] = @"   /|";
-                rightImage[2] = @"  /||";
-                rightImage[3] = @" /|||";
-                rightImage[4] = @"/||||";
-                rightImage[5] = @"|||||";
-                rightImage[6] = @"|||||";
-                rightImage[7] = @"|||||";
-                rightImage[8] = @"|||||";
-                rightImage[9] = @"|||||";
-               rightImage[10] = @"\||||";
-               rightImage[11] = @"*\|||";
-               rightImage[12] = @"**\||";
-               rightImage[13] = @"***\|";
-               rightImage[14] = @"****\";
+                right = "WallRightWallFront";
             }
             else if (leftFrontRight[2] == 0 && leftFrontRight[4] == 1)
             {
-                //wall right and open space front and right
-                rightImage[0] = @"    /";
-                rightImage[1] = @"   /|";
-                rightImage[2] = @"  /||";
-                rightImage[3] = @"  |||";
-                rightImage[4] = @"__|||";
-                rightImage[5] = @"  |||";
-                rightImage[6] = @"  |||";
-                rightImage[7] = @"  |||";
-                rightImage[8] = @"  |||";
-                rightImage[9] = @"  |||";
-               rightImage[10] = @"**|||";
-               rightImage[11] = @"**|||";
-               rightImage[12] = @"**\||";
-               rightImage[13] = @"***\|";
-               rightImage[14] = @"****\";
+                right = "WallRightOpenFront";
             }
             else if (leftFrontRight[2] == 1 && leftFrontRight[4] == 1)
             {
-                //open space right and open space front and right
-                rightImage[0] = @"     ";
-                rightImage[1] = @"     ";
-                rightImage[2] = @"     ";
-                rightImage[3] = @"     ";
-                rightImage[4] = @"_____";
-                rightImage[5] = @"     ";
-                rightImage[6] = @"     ";
-                rightImage[7] = @"     ";
-                rightImage[8] = @"     ";
-                rightImage[9] = @"     ";
-               rightImage[10] = @"*****";
-               rightImage[11] = @"*****";
-               rightImage[12] = @"*****";
-               rightImage[13] = @"*****";
-               rightImage[14] = @"*****";
+                right = "OpenRightOpenFront";
             }
             else if (leftFrontRight[2] == 1 && leftFrontRight[4] == 0)
             {
-                //open space right but wall front and right
-                rightImage[0] = @"     ";
-                rightImage[1] = @"     ";
-                rightImage[2] = @"  ___";
-                rightImage[3] = @" /|||";
-                rightImage[4] = @"/||||";
-                rightImage[5] = @"|||||";
-                rightImage[6] = @"|||||";
-                rightImage[7] = @"|||||";
-                rightImage[8] = @"|||||";
-                rightImage[9] = @"|||||";
-               rightImage[10] = @"\||||";
-               rightImage[11] = @"*\|||";
-               rightImage[12] = @"*****";
-               rightImage[13] = @"*****";
-               rightImage[14] = @"*****";
+                right = "OpenRightWallFront";
             }
+
+            //---------------------------------------------------------------------------------
+            //walls where there is a wall in the middle path
 
             if (leftFrontRight[1] == 0)
             {
-                //wall in front
-                frontImage[0] = @"                 ";
-                frontImage[1] = @"                 ";
-                frontImage[2] = @"_________________";
-                frontImage[3] = @"|||||||||||||||||";
-                frontImage[4] = @"|||||||||||||||||";
-                frontImage[5] = @"|||||||||||||||||";
-                frontImage[6] = @"|||||||||||||||||";
-                frontImage[7] = @"|||||||||||||||||";
-                frontImage[8] = @"|||||||||||||||||";
-                frontImage[9] = @"|||||||||||||||||";
-               frontImage[10] = @"|||||||||||||||||";
-               frontImage[11] = @"|||||||||||||||||";
-               frontImage[12] = @"*****************";
-               frontImage[13] = @"*****************";
-               frontImage[14] = @"*****************";
+                middle = "WallMiddle";
 
+                //left corners
                 if (leftFrontRight [3] == 0 && leftFrontRight[0] == 1)
                 {
-                    //wall in front and up and left
-                    leftImage[0] = @"     ";
-                    leftImage[1] = @"     ";
-                    leftImage[2] = @"_____";
-                    leftImage[3] = @"|||||";
-                    leftImage[4] = @"|||||";
-                    leftImage[5] = @"|||||";
-                    leftImage[6] = @"|||||";
-                    leftImage[7] = @"|||||";
-                    leftImage[8] = @"|||||";
-                    leftImage[9] = @"|||||";
-                   leftImage[10] = @"|||||";
-                   leftImage[11] = @"|||||";
-                   leftImage[12] = @"*****";
-                   leftImage[13] = @"*****";
-                   leftImage[14] = @"*****";
+                    left = "WallMiddleWallFront";
                 }
                 else if(leftFrontRight [3] == 1)
                 {
-                    leftImage[0] = @"     ";
-                    leftImage[1] = @"     ";
-                    leftImage[2] = @"  ___";
-                    leftImage[3] = @" /|||";
-                    leftImage[4] = @"/||||";
-                    leftImage[5] = @"|||||";
-                    leftImage[6] = @"|||||";
-                    leftImage[7] = @"|||||";
-                    leftImage[8] = @"|||||";
-                    leftImage[9] = @"|||||";
-                   leftImage[10] = @"\||||";
-                   leftImage[11] = @"*\|||";
-                   leftImage[12] = @"*****";
-                   leftImage[13] = @"*****";
-                   leftImage[14] = @"*****";
+                    left = "WallMiddleSpaceFront";
                 }
                 else if (leftFrontRight[0] == 0)
                 {
-                    leftImage[0] = @"\    ";
-                    leftImage[1] = @"|\   ";
-                    leftImage[2] = @"||\__";
-                    leftImage[3] = @"|||||";
-                    leftImage[4] = @"|||||";
-                    leftImage[5] = @"|||||";
-                    leftImage[6] = @"|||||";
-                    leftImage[7] = @"|||||";
-                    leftImage[8] = @"|||||";
-                    leftImage[9] = @"|||||";
-                   leftImage[10] = @"|||||";
-                   leftImage[11] = @"|||||";
-                   leftImage[12] = @"||/**";
-                   leftImage[13] = @"|/***";
-                   leftImage[14] = @"/****";
+                    left = "WallMiddleWallLeft";
                 }
 
+                //right corners
                 if (leftFrontRight[4] == 0 && leftFrontRight[2] == 1)
                 {
-                    //wall in front and up and right
-                    rightImage[0] = @"     ";
-                    rightImage[1] = @"     ";
-                    rightImage[2] = @"_____";
-                    rightImage[3] = @"|||||";
-                    rightImage[4] = @"|||||";
-                    rightImage[5] = @"|||||";
-                    rightImage[6] = @"|||||";
-                    rightImage[7] = @"|||||";
-                    rightImage[8] = @"|||||";
-                    rightImage[9] = @"|||||";
-                   rightImage[10] = @"|||||";
-                   rightImage[11] = @"|||||";
-                   rightImage[12] = @"*****";
-                   rightImage[13] = @"*****";
-                   rightImage[14] = @"*****";
+                    right = "WallMiddleWallFront";
                 }
                 else if (leftFrontRight[4] == 1)
                 {
 
-                    rightImage[0] = @"     ";
-                    rightImage[1] = @"     ";
-                    rightImage[2] = @"___  ";
-                    rightImage[3] = @"|||\ ";
-                    rightImage[4] = @"||||\";
-                    rightImage[5] = @"|||||";
-                    rightImage[6] = @"|||||";
-                    rightImage[7] = @"|||||";
-                    rightImage[8] = @"|||||";
-                    rightImage[9] = @"|||||";
-                   rightImage[10] = @"||||/";
-                   rightImage[11] = @"|||/*";
-                   rightImage[12] = @"*****";
-                   rightImage[13] = @"*****";
-                   rightImage[14] = @"*****";
+                    right = "WallMiddleSpaceFront";
                 }
                 else if (leftFrontRight[2] == 0)
                 {
-                    rightImage[0] = @"    /";
-                    rightImage[1] = @"   /|";
-                    rightImage[2] = @"__/||";
-                    rightImage[3] = @"|||||";
-                    rightImage[4] = @"|||||";
-                    rightImage[5] = @"|||||";
-                    rightImage[6] = @"|||||";
-                    rightImage[7] = @"|||||";
-                    rightImage[8] = @"|||||";
-                    rightImage[9] = @"|||||";
-                   rightImage[10] = @"|||||";
-                   rightImage[11] = @"|||||";
-                   rightImage[12] = @"**\||";
-                   rightImage[13] = @"***\|";
-                   rightImage[14] = @"****\";
+                    right = "WallMiddleWallRight";
                 }
-
-            }
+            }//open middle path
             else if (leftFrontRight[1] == 1)
             {
-
-                frontImage[0] = @"                 ";
-                frontImage[1] = @"                 ";
-                frontImage[2] = @"                 ";
-                frontImage[3] = @"                 ";
-                frontImage[4] = @"_________________";
-                frontImage[5] = @"                 ";
-                frontImage[6] = @"                 ";
-                frontImage[7] = @"                 ";
-                frontImage[8] = @"                 ";
-                frontImage[9] = @"                 ";
-               frontImage[10] = @"*****************";
-               frontImage[11] = @"*****************";
-               frontImage[12] = @"*****************";
-               frontImage[13] = @"*****************";
-               frontImage[14] = @"*****************";
+                middle = "OpenMiddle";
             }
 
-            string mapSaver = "";
+            //use files with ascii art to build the maze
+            StreamReader LeftFile = new StreamReader("C:\\Users\\tbroughton\\source\\repos\\MazeRunner\\Assets\\Walls\\Left\\" + left + ".txt");
+            StreamReader MiddleFile = new StreamReader("C:\\Users\\tbroughton\\source\\repos\\MazeRunner\\Assets\\Walls\\Middle\\" + middle + ".txt");
+            StreamReader RightFile = new StreamReader("C:\\Users\\tbroughton\\source\\repos\\MazeRunner\\Assets\\Walls\\Right\\" + right + ".txt");
 
+            string renderMap = "";
+
+            //reads each line from the text files, concats them togather, and moves to next line untill image is rendered
             for (int i = 0; i < 15; i++)
             {
-                mapSaver = "";
 
+                //code here prints map to the right of the maze by adding a map line to the end of each maze line + 5 spaces
+                renderMap = "";
                 for (int j = 0; j < 20; j++)
                 {
-                    mapSaver += map[i,j];
+                    renderMap += map[i, j];
                 }
-                renderMaze += leftImage[i] + frontImage[i] + rightImage[i] + "     " + mapSaver + "\n";
+
+                renderMaze += LeftFile.ReadLine() + MiddleFile.ReadLine() + RightFile.ReadLine() + "     " +  renderMap + "\n";
             }
 
+            //27 chars in the render maze image left to right
+            //rendering map 5 chars to right of maze, 32 chars from left total
+
+            //renders last 5 lines of the map below / to the right of the maze
             for (int i = 15; i < 20; i++)
             {
-                mapSaver = "";
-
+                renderMaze += "                                ";
                 for (int j = 0; j < 20; j++)
                 {
-                    mapSaver += map[i, j];
+                    renderMaze += map[i, j];
                 }
-
-                renderMaze += "                                " + mapSaver + "\n";
+                renderMaze += "\n";
             }
-
-
             return renderMaze;
-
         }
 
-        //--------------------------------------------------------------------------------------------------------------------------------------------
-        static int[] GrabPlayerSurroundings(int[,] maze, char playerFacing, int[] playerLocation)
+        //---------------------------------------------------------------------------------------------------------------------------------------------
+        static int[] GrabPlayerSurroundings(int[,] maze, char playerFacing, int[] playerLocation, char[,] map)
         {
 
             int[] left = new int[2];
@@ -504,6 +306,7 @@ namespace MazeRunner
             int[] frontRight = new int[2];
 
             //grab the visible coordinates around the player
+            //using player location, we modify the coordinates based on player facing
             switch (playerFacing)
             {
                 case 'n':
@@ -577,13 +380,15 @@ namespace MazeRunner
             //pass "lfr" back to RenderMaze so it knows what to render and where
             //after update 'lfr' also includes objects to our front-left and front-right to render corners correctly, now called lfrFLFR
 
+            MarkMap(left, front, right, frontLeft, frontRight, map, maze);
+
             int[] lfrFLFR = new int[] { maze[left[0], left[1]], maze[front[0], front[1]], maze[right[0], right[1]], maze[frontLeft[0], frontLeft[1]], maze[frontRight[0], frontRight[1]] };
 
             return lfrFLFR;
             
         }
 
-        //--------------------------------------------------------------------------------------------------------------------------------------------
+        //---------------------------------------------------------------------------------------------------------------------------------------------
         static char TurnPlayer(char action, char playerFacing)
         {
             //changes which direction the player is facing
@@ -697,207 +502,380 @@ namespace MazeRunner
             return newSpot;
         }
 
+        //---------------------------------------------------------------------------------------------------------------------------------------------
+        static void MarkMap(int[] left, int[] front, int[] right, int[] frontLeft, int[] frontRight, char[,] map, int [,]maze)
+        {
 
-        /*
-
-                doors 
-
-                frontImage[0] = @"                 ";
-                frontImage[1] = @"                 ";
-                frontImage[2] = @"_________________";
-                frontImage[3] = @"|       |       |";
-                frontImage[4] = @"|       |       |";
-                frontImage[5] = @"|       |       |";
-                frontImage[6] = @"|       |       |";
-                frontImage[7] = @"|     0 | 0     |";
-                frontImage[8] = @"|       |       |";
-                frontImage[9] = @"|       |       |";
-               frontImage[10] = @"|       |       |";
-               frontImage[11] = @"|_______|_______|";
-               frontImage[12] = @"*****************";
-               frontImage[13] = @"*****************";
-               frontImage[14] = @"*****************";
-
-                    leftImage[0] = @"     ";
-                    leftImage[1] = @"     ";
-                    leftImage[2] = @"_____";
-                    leftImage[3] = @"|   |";
-                    leftImage[4] = @"|   |";
-                    leftImage[5] = @"|   |";
-                    leftImage[6] = @"|   |";
-                    leftImage[7] = @"|0  |";
-                    leftImage[8] = @"|   |";
-                    leftImage[9] = @"|   |";
-                   leftImage[10] = @"|   |";
-                   leftImage[11] = @"|___|";
-                   leftImage[12] = @"*****";
-                   leftImage[13] = @"*****";
-                   leftImage[14] = @"*****";
-
-                    rightImage[0] = @"     ";
-                    rightImage[1] = @"     ";
-                    rightImage[2] = @"_____";
-                    rightImage[3] = @"|   |";
-                    rightImage[4] = @"|   |";
-                    rightImage[5] = @"|   |";
-                    rightImage[6] = @"|   |";
-                    rightImage[7] = @"|  0|";
-                    rightImage[8] = @"|   |";
-                    rightImage[9] = @"|   |";
-                   rightImage[10] = @"|   |";
-                   rightImage[11] = @"|___|";
-                   rightImage[12] = @"*****";
-                   rightImage[13] = @"*****";
-                   rightImage[14] = @"*****";
+            if (maze[left[0],left[1]] == 0)
+            {
+                map[left[0], left[1]] = '#';
+            }
+            else if (maze[left[0], left[1]] == 1)
+            {
+                map[left[0], left[1]] = '.';
+            }
 
 
-        //---------------------------------------------------------------
-
-                leftImage[0] = @"\    ";
-                leftImage[1] = @"|\   ";
-                leftImage[2] = @"| \  ";
-                leftImage[3] = @"| |\ ";
-                leftImage[4] = @"| | \";
-                leftImage[5] = @"| | |";
-                leftImage[6] = @"| | |";
-                leftImage[7] = @"|0|0|";
-                leftImage[8] = @"| | |";
-                leftImage[9] = @"| | |";
-               leftImage[10] = @"| | /";
-               leftImage[11] = @"| |/*";
-               leftImage[12] = @"| /**";
-               leftImage[13] = @"|/***";
-               leftImage[14] = @"/****";
+            if (maze[right[0], right[1]] == 0)
+            {
+                map[right[0], right[1]] = '#';
+            }
+            else if (maze[right[0], right[1]] == 1)
+            {
+                map[right[0], right[1]] = '.';
+            }
 
 
-                leftImage[0] = @"\    ";
-                leftImage[1] = @"|\   ";
-                leftImage[2] = @"| \  ";
-                leftImage[3] = @"| |  ";
-                leftImage[4] = @"| |__";
-                leftImage[5] = @"| |  ";
-                leftImage[6] = @"| |  ";
-                leftImage[7] = @"|0|  ";
-                leftImage[8] = @"| |  ";
-                leftImage[9] = @"| |  ";
-               leftImage[10] = @"| |**";
-               leftImage[11] = @"| |**";
-               leftImage[12] = @"| /**";
-               leftImage[13] = @"|/***";
-               leftImage[14] = @"/****";
+            if (maze[front[0], front[1]] == 0)
+            {
+                map[front[0], front[1]] = '#';
+            }
+            else if (maze[front[0], front[1]] == 1)
+            {
+                map[front[0], front[1]] = '.';
+            }
+
+
+            if (maze[frontLeft[0], frontLeft[1]] == 0)
+            {
+                map[frontLeft[0], frontLeft[1]] = '#';
+            }
+            else if (maze[frontLeft[0], frontLeft[1]] == 1)
+            {
+                map[frontLeft[0], frontLeft[1]] = '.';
+            }
+
+
+            if (maze[frontRight[0], frontRight[1]] == 0)
+            {
+                map[frontRight[0], frontRight[1]] = '#';
+            }
+            else if (maze[frontRight[0], frontRight[1]] == 1)
+            {
+                map[frontRight[0], frontRight[1]] = '.';
+            }
+        }
+
+        //---------------------------------------------------------------------------------------------------------------------------------------------
+        static void Combat(Player playerOne, Random playerRoll, int[] playerLocation)
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("\n\n\n\n\n\n\n          AN ENEMY APPEARS!     \n\n\n\n\n\n\n           >>> press S to S)tart the battle <<<");
+                char battleChar = Console.ReadKey(true).KeyChar;
+
+                if (battleChar == 's' || battleChar == 'S')
+                {
+                    Console.Clear();
+                    break;
+                }
+                else
+                {
+                    Console.Clear();
+                    continue;
+                }
+            }
+
+            var enemy = MonsterManual(playerOne, playerRoll);
+            int counter = 1;
+            bool enemyDefending = false;
+            bool playerDefending = false;
+
+            while (true)
+            {
+
+                //render battle screen----------------use new render combat method
+                RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, ("LEVEL: " + playerOne.Level.ToString()));
 
 
 
-                leftImage[0] = @"     ";
-                leftImage[1] = @"     ";
-                leftImage[2] = @"___  ";
-                leftImage[3] = @"|||\ ";
-                leftImage[4] = @"||| \";
-                leftImage[5] = @"||| |";
-                leftImage[6] = @"||| |";
-                leftImage[7] = @"|||0|";
-                leftImage[8] = @"||| |";
-                leftImage[9] = @"||| |";
-               leftImage[10] = @"||| /";
-               leftImage[11] = @"|||/*";
-               leftImage[12] = @"*****";
-               leftImage[13] = @"*****";
-               leftImage[14] = @"*****";
+                while (true)
+                {
+                    playerDefending = false;
+                    Console.WriteLine("Would you like to   A)ttack   or   D)effend  ?\n");
+                    char answer = Console.ReadKey(true).KeyChar;
+
+
+                    if (answer == 'a' || answer == 'A')
+                    {
+                        //player object attack based on strength and weapon-----------------------------------ATTACK
+
+                        if (enemyDefending == false)
+                        {
+                            enemy.Health -= ((playerOne.Attack() + playerOne.WeaponBonus) - enemy.Defense);
+
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDamaged, "Attacked for " + ((playerOne.Strength + playerOne.WeaponBonus) - enemy.Defense) + " damage!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, "Attacked for " + ((playerOne.Strength + playerOne.WeaponBonus) - enemy.Defense) + " damage!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDamaged, "Attacked for " + ((playerOne.Strength + playerOne.WeaponBonus) - enemy.Defense) + " damage!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, "Attacked for " + ((playerOne.Strength + playerOne.WeaponBonus) - enemy.Defense) + " damage! - press anything to continue!");
+                            Console.ReadKey(true);
+                            break;
+                        }
+                        else
+                        {
+                            enemy.Health -= ((playerOne.Attack() + playerOne.WeaponBonus) - (enemy.Defense + 1));
+
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDamaged, "Attacked for " + ((playerOne.Attack() + playerOne.WeaponBonus) - (enemy.Defense + 1)) + " damage!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDefend, "Attacked for " + ((playerOne.Attack() + playerOne.WeaponBonus) - (enemy.Defense + 1)) + " damage!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDamaged, "Attacked for " + ((playerOne.Attack() + playerOne.WeaponBonus) - (enemy.Defense + 1)) + " damage!");
+                            Thread.Sleep(300);// timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDefend, "Attacked for " + ((playerOne.Attack() + playerOne.WeaponBonus) - (enemy.Defense + 1)) + " reduced damage! - press anything to continue!");
+                            Console.ReadKey(true);
+                            break;
+                        }
+                        
+                    }
+                    else if (answer == 'd' || answer == 'D')
+                    {
+                        //player defense boosted and skip to enemy turn------------------------------------------DEFEND
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, "Defense raised 50% this turn! - press anything to continue!");
+                        playerDefending = true;
+                        Console.ReadKey(true);
+                        break;
+                    }
+                    else
+                    {
+                        //wrong key press
+                        break;
+                    }
+
+                }
+
+                enemyDefending = false;//---------------------------------------------------------------------------------------ENEMY COMBAT
+
+                if (enemy.Health <= 0)
+                {
+                    RenderCombat(playerOne, enemy, counter, enemy.EnemyPop, "* * POP!! * *");
+                    Thread.Sleep(500);//timer
+                    RenderCombat(playerOne, enemy, counter, enemy.EnemyDust, " * *POP!!**");
+                    Thread.Sleep(500);//timer
+                    RenderCombat(playerOne, enemy, counter, enemy.EnemyDust, "ENEMY DEFEATED!!\n" + Victory(playerOne, enemy) + "\npress anything to continue!");
+                    Console.ReadKey(true);
+                    break;
+                }
+                else
+                {
+
+                    //enemy action
+                    int enemyDecision = playerRoll.Next(1, 11);
+
+                    if (enemyDecision <= enemy.Intelligence) // taunt
+                    {
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyTaunt, enemy.EnemyName + " shouted a taunt!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " shouted a taunt!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyTaunt, enemy.EnemyName + " shouted a taunt!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " shouted a taunt! - press any key to continue");
+                        Console.ReadKey(true);
+                    }
+                    else if(enemyDecision >= 6) // attack
+                    {
+                        if (playerDefending == false)
+                        {
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyAttack, enemy.EnemyName + " attacked!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " attacked!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyAttack, enemy.EnemyName + " attacked!");
+
+                            //chance to miss attack---------------------------------------------------------------------------------X
+
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " attacked for " + ((enemy.Strength - playerOne.Defense) + " damage! - press any key to continue"));
+                            playerOne.currentHP -= (enemy.Strength - playerOne.Defense);
+                            Console.ReadKey(true);
+                        }
+                        else
+                        {
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyAttack, enemy.EnemyName + " attacked!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " attacked!");
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyAttack, enemy.EnemyName + " attacked!");
+
+                            //chance to miss attack-----------------------------------------------------------------------------------X
+
+                            Thread.Sleep(300);//timer
+                            RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " attacked for " + ((enemy.Strength - (playerOne.Defense + 1)) + " damage! - press any key to continue"));
+                            playerOne.currentHP -= (enemy.Strength - playerOne.Defense + 1);
+                            Console.ReadKey(true);
+                        }
+                    }
+                    else // defend
+                    {
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDefend, enemy.EnemyName + " is defending!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " is defending!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDefend, enemy.EnemyName + " is defending!");
+                        Thread.Sleep(300);//timer
+                        RenderCombat(playerOne, enemy, counter, enemy.EnemyDisplay, enemy.EnemyName + " is defending! - press any key to continue");
+                        enemyDefending = true;
+                        Console.ReadKey(true);
+                    }
+
+
+                    counter++;
+
+                    //check if player hp has gone to 0 or below to end game
+                    //raise turn counter by
+
+                }
+
+
+
+
+
+            }
+
+        }
+
+        //-----------------------------------------------------------------------------------------------------------------------------------------------
+        static Enemy MonsterManual(Player playerOne, Random playerRoll)
+        {
+            //scale monsters returned with player level...
+            int enemyFloor = playerOne.Level; //1 - 15
+            int enemyCeiling = (10 + playerOne.Level); //11 - 26
+
+            int monsterChoice = playerRoll.Next(enemyFloor, enemyCeiling);
+
+            if (monsterChoice <= 5)
+            {
+                Enemy Moople = new Enemy
+                {
+                    EnemyName = "Moople",
+                    Initiative = 4,
+                    Strength = 2,
+                    Accuracy = 8,
+                    Experience = 4,
+                    Defense = 0,
+                    Health = 3,
+                    Intelligence = 3,
+                    EnemyPop = @"Moople\Pop",
+                    EnemyDust = @"Moople\Dust",
+                    EnemyImage = @"Moople\Moople",
+                    EnemyDisplay = @"Moople\Moople",
+                    EnemyAttack = @"Moople\MoopleAttack",
+                    EnemyDefend = @"Moople\MoopleDefend",
+                    EnemyTaunt = @"Moople\MoopleTaunt",
+                    EnemyDamaged = @"Moople\MoopleDamage"
+                };
+                return Moople;
+            }
+            else if(monsterChoice <= 10)
+            {
+                Enemy Cradberry = new Enemy
+                {
+                    EnemyName = "Cradberry",
+                    Initiative = 5,
+                    Strength = 4,
+                    Accuracy = 6,
+                    Experience = 6,
+                    Defense = 1,
+                    Health = 4,
+                    Intelligence = 2,
+                    EnemyPop = @"Cradberry\Pop",
+                    EnemyDust = @"Cradberry\Dust",
+                    EnemyImage = @"Cradberry\Cradberry",
+                    EnemyDisplay = @"Cradberry\Cradberry",
+                    EnemyAttack = @"Cradberry\CradberryAttack",
+                    EnemyDefend = @"Cradberry\CradberryDefend",
+                    EnemyTaunt = @"Cradberry\CradberryTaunt",
+                    EnemyDamaged = @"Cradberry\CradberryDamage"
+                };
+                return Cradberry;
+            }
+            else if(monsterChoice <= 15)
+            {
+                Enemy Spookster = new Enemy
+                {
+                    EnemyName = "Spookster",
+                    Initiative = 5,
+                    Strength = 6,
+                    Accuracy = 7,
+                    Experience = 10,
+                    Defense = 2,
+                    Health = 8,
+                    Intelligence = 2,
+                    EnemyPop = @"Spookster\Pop",
+                    EnemyDust = @"Spookster\Dust",
+                    EnemyImage = @"Spookster\Spookster",
+                    EnemyDisplay = @"Spookster\Spookster",
+                    EnemyAttack = @"Spookster\SpooksterAttack",
+                    EnemyDefend = @"Spookster\SpooksterDefend",
+                    EnemyTaunt = @"Spookster\SpooksterTaunt",
+                    EnemyDamaged = @"Spookster\SpooksterDamage"
+                };
+                return Spookster;
+            }
+            else if (monsterChoice <= 20)
+            {
+                //need a new type of monster
+                return null;
+            }
+            else if(monsterChoice <= 24)
+            {
+                //flying bomb
+                return null;
+            }
+            else
+            {
+                //king moople
+                return null;
+            }
+
+        }
+
+        //------------------------------------------------------------------------------------------------------------------------------------------------
+        static void RenderCombat (Player playerOne, Enemy enemy, int counter,string EnemyDisplay,string combatMessage)
+        {
+            Console.Clear();
+
+            Console.WriteLine("BATTLE AGAINST: {0}", enemy.EnemyName);
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            Console.WriteLine("TURN: {0}", counter);
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n");
+
+
+
+            String enemyImage;
+
+            //Pass the file path and file name to the StreamReader constructor
+            StreamReader sr = new StreamReader(@"C:\Users\tbroughton\source\repos\MazeRunner\Assets\Enemies\" + EnemyDisplay + ".txt");
+
+            //Read the first line of text
+            enemyImage = sr.ReadLine();
+
+            //Continue to read until you reach end of file
+            while (enemyImage != null)
+            {
+                //write the lie to console window
+                Console.WriteLine("                    " + enemyImage);
+                //Read the next line
+                enemyImage = sr.ReadLine();
+            }
+
+
+            Console.WriteLine("\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            Console.WriteLine("Player HP: {0}", playerOne.currentHP + " / " + playerOne.HP);
+            Console.WriteLine("{0}", combatMessage);
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        }
+
+        //-----------------------------------------------------------------------------------------------------------------------------------------------
+        static string Victory(Player playerOne, Enemy enemy)
+        {
+            return playerOne.LevelUp(enemy.Experience);
             
-
-                    leftImage[0] = @"\    ";
-                    leftImage[1] = @"|\   ";
-                    leftImage[2] = @"| \__";
-                    leftImage[3] = @"| |||";
-                    leftImage[4] = @"| |||";
-                    leftImage[5] = @"| |||";
-                    leftImage[6] = @"| |||";
-                    leftImage[7] = @"|0|||";
-                    leftImage[8] = @"| |||";
-                    leftImage[9] = @"| |||";
-                   leftImage[10] = @"| |||";
-                   leftImage[11] = @"| |||";
-                   leftImage[12] = @"| /**";
-                   leftImage[13] = @"|/***";
-                   leftImage[14] = @"/****";
-
-            //---------------------------------------
-
-
-
-                rightImage[0] = @"    /";
-                rightImage[1] = @"   /|";
-                rightImage[2] = @"  / |";
-                rightImage[3] = @" /| |";
-                rightImage[4] = @"/ | |";
-                rightImage[5] = @"| | |";
-                rightImage[6] = @"| | |";
-                rightImage[7] = @"|0|0|";
-                rightImage[8] = @"| | |";
-                rightImage[9] = @"| | |";
-               rightImage[10] = @"\ | |";
-               rightImage[11] = @"*\| |";
-               rightImage[12] = @"**\ |";
-               rightImage[13] = @"***\|";
-               rightImage[14] = @"****\";
-
-
-                rightImage[0] = @"    /";
-                rightImage[1] = @"   /|";
-                rightImage[2] = @"  / |";
-                rightImage[3] = @"  | |";
-                rightImage[4] = @"__| |";
-                rightImage[5] = @"  | |";
-                rightImage[6] = @"  | |";
-                rightImage[7] = @"  |0|";
-                rightImage[8] = @"  | |";
-                rightImage[9] = @"  | |";
-               rightImage[10] = @"**| |";
-               rightImage[11] = @"**| |";
-               rightImage[12] = @"**\ |";
-               rightImage[13] = @"***\|";
-               rightImage[14] = @"****\";
-
-
-
-                rightImage[0] = @"     ";
-                rightImage[1] = @"     ";
-                rightImage[2] = @"  ___";
-                rightImage[3] = @" /|||";
-                rightImage[4] = @"/ |||";
-                rightImage[5] = @"| |||";
-                rightImage[6] = @"| |||";
-                rightImage[7] = @"|0|||";
-                rightImage[8] = @"| |||";
-                rightImage[9] = @"| |||";
-               rightImage[10] = @"\ |||";
-               rightImage[11] = @"*\|||";
-               rightImage[12] = @"*****";
-               rightImage[13] = @"*****";
-               rightImage[14] = @"*****";
-
-
-                    rightImage[0] = @"    /";
-                    rightImage[1] = @"   /|";
-                    rightImage[2] = @"__/ |";
-                    rightImage[3] = @"||| |";
-                    rightImage[4] = @"||| |";
-                    rightImage[5] = @"||| |";
-                    rightImage[6] = @"||| |";
-                    rightImage[7] = @"|||0|";
-                    rightImage[8] = @"||| |";
-                    rightImage[9] = @"||| |";
-                   rightImage[10] = @"||| |";
-                   rightImage[11] = @"||| |";
-                   rightImage[12] = @"**\ |";
-                   rightImage[13] = @"***\|";
-                   rightImage[14] = @"****\";
-               
-
-   
-            */
-
-
+        }
 
     }
 }

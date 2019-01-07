@@ -48,7 +48,7 @@ namespace MazeRunner
             //0 = wall
             //1 = open space
             //2 = door - doors count as walls but display differently, moving onto one checks for key, if key found the door goes away as does the key
-            //3 = treasure chest - counts as open space, renders chest on middle image from any angle, and player can pree O to open, receive itme, and return space to normal
+            //3 = treasure chest - counts as open space, renders chest on middle image from any angle, and player can pree O to open, receive item, and return space to normal
 
 
 
@@ -801,8 +801,8 @@ namespace MazeRunner
                     Initiative = 5,
                     Strength = 6,
                     Accuracy = 7,
-                    Experience = 10,
-                    Defense = 2,
+                    Experience = 11,
+                    Defense = 1,
                     Health = 8,
                     Intelligence = 2,
                     EnemyPop = @"Spookster\Pop",
